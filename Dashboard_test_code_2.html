@@ -405,7 +405,7 @@
                 
                 <div class="chart-container">
                     <div class="chart-title">Framework Stage Progress</div>
-                    <div class="progress-bars">
+                    <!-- <div class="progress-bars">
                         <div class="progress-item">
                             <div class="progress-label">Inputs</div>
                             <div class="progress-bar">
@@ -441,7 +441,7 @@
                             </div>
                             <div class="progress-value">30%</div>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
                 
                 <div class="chart-container">
@@ -1821,14 +1821,14 @@
             };
             
             // Simulate performance checks
-            Object.entries(performanceThresholds).forEach(([program, threshold]) => {
+            /* Object.entries(performanceThresholds).forEach(([program, threshold]) => {
                 const currentPerformance = Math.random() * 100; // Simulate dynamic performance
                 if (currentPerformance < threshold) {
                     showNotification(`${program.toUpperCase()} performance below threshold: ${currentPerformance.toFixed(1)}%`, 'warning');
                 } else if (currentPerformance > 95) {
                     showNotification(`${program.toUpperCase()} performance is excellent: ${currentPerformance.toFixed(1)}%`, 'success');
                 }
-            });
+            }); */
         }
 
         // Run performance checks periodically

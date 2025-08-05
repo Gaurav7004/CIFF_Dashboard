@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harmonising VAC Impact Framework</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Existing styles */
+        .indicator-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+        .indicator-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .input-card { border-color: #3B82F6; }
+        .output-card { border-color: #10B981; }
+        .outcome-card { border-color: #F59E0B; }
+        .impact-card { border-color: #EC4899; }
+        .significance-card { border-color: #8B5CF6; }
+        .progress-bar {
+            height: 6px;
+            border-radius: 3px;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .on-track { background-color: #10B981; }
+        .at-risk { background-color: #F59E0B; }
+        .off-track { background-color: #EF4444; }
+
+        /* Table styles */
+        .data-table-container {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Clickable Framework Stage */
+        .framework-stage-item {
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+        }
+        .framework-stage-item:hover {
+            background-color: #f3f4f6;
+        }
+        .framework-stage-item.active-stage {
+            background-color: #e0e7ff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">VAC Impact Framework</h1>
+        <p class="text-gray-600 mb-8">Violence Against Children (VAC) indicators Input → Output → Outcome → Impact → Significance framework</p>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8 flex flex-wrap items-center gap-4">
+            <label for="programFilter" class="font-medium text-gray-700">Filter by Program:</label>
+            <select id="programFilter" class="form-select block w-full md:w-auto px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                <option value="All">All Programs</option>
+                <option value="KAWACH">KAWACH</option>
+                <option value="SAMRIDDHI">SAMRIDDHI</option>
+                <option value="MRC">MRC</option>
+            </select>
+
+            <label for="stateFilter" class="font-medium text-gray-700">Filter by State:</label>
+            <select id="stateFilter" class="form-select block w-full md:w-auto px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                <option value="All">All States</option>
+                <option value="State A">State A</option>
+                <option value="State B">State B</option>
+                <option value="State C">State C</option>
+                <option value="State D">State D</option>
+            </select>
+        </div>
+
+        <!-- Framework Visualization -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Framework Explanation -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Framework Structure <button id="resetStageFilter" class="ml-2 text-sm text-blue-600 hover:underline">Reset</button></h2>
+                <div class="space-y-2">
+                    <div class="flex items-start framework-stage-item" data-stage="Input">
+                        <div class="h-10 w-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-4">1</div>
+                        <div>
+                            <h3 class="font-medium text-gray-800">Input</h3>
+                            <p class="text-gray-600 text-sm">Resources and capacity-building for VAC prevention</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start framework-stage-item" data-stage="Output">
+                        <div class="h-10 w-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold mr-4">2</div>
+                        <div>
+                            <h3 class="font-medium text-gray-800">Output</h3>
+                            <p class="text-gray-600 text-sm">Direct results of VAC prevention activities</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start framework-stage-item" data-stage="Outcome">
+                        <div class="h-10 w-10 bg-yellow-500 rounded-full flex items-center justify-center text-white font-bold mr-4">3</div>
+                        <div>
+                            <h3 class="font-medium text-gray-800">Outcome</h3>
+                            <p class="text-gray-600 text-sm">Behavioral changes and reduced vulnerability</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start framework-stage-item" data-stage="Impact">
+                        <div class="h-10 w-10 bg-pink-500 rounded-full flex items-center justify-center text-white font-bold mr-4">4</div>
+                        <div>
+                            <h3 class="font-medium text-gray-800">Impact</h3>
+                            <p class="text-gray-600 text-sm">Long-term societal change and violence reduction</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start framework-stage-item" data-stage="Significance">
+                        <div class="h-10 w-10 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold mr-4">5</div>
+                        <div>
+                            <h3 class="font-medium text-gray-800">Significance</h3>
+                            <p class="text-gray-600 text-sm">Systemic shift in child protection</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Indicators by Framework Stage</h2>
+                    <div class="h-64">
+                        <canvas id="frameworkBarChart"></canvas>
+                    </div>
+                </div>
+                <!-- <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Framework Progress Overview</h2>
+                    <div class="h-64">
+                        <canvas id="frameworkRadarChart"></canvas>
+                    </div>
+                </div> -->
+                <!-- <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Program-wise Achievement by Stage</h2>
+                    <div class="h-64">
+                        <canvas id="programStageBarChart"></canvas>
+                    </div>
+                </div> -->
+            </div>
+        </div>
+
+        <!-- Comparison Chart Section -->
+        <div id="comparisonChartSection" class="data-table-container mb-8 hidden">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Indicator Comparison Across States</h2>
+            <div class="h-80">
+                <canvas id="indicatorComparisonChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Detailed Indicator Table -->
+        <div class="data-table-container">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Detailed Indicator Analysis</h2>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Compare</th> <!-- New column for comparison checkbox -->
+                        <th>Program</th>
+                        <th>Framework Stage</th>
+                        <th>Indicator Name</th>
+                        <th>State</th>
+                        <th>Current Value</th>
+                        <th>Target Value</th>
+                        <th>Achievement %</th>
+                        <!-- <th>Status</th> -->
+                    </tr>
+                </thead>
+                <tbody id="indicatorTableBody">
+                    <!-- Data will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Global variable to store the currently selected stage filter
+        let currentStageFilter = 'All';
+        // Global array to store selected indicators for comparison
+        let selectedIndicatorsForComparison = [];
+        let indicatorComparisonChart; // Global chart instance for comparison
+
+        // Sample Data for Indicators, now including program and state information
+        const allIndicators = [
+            // KAWACH Indicators (Focus on VAC)
+            // INPUTS
+            {
+                id: 'K_I_1', program: 'KAWACH', stage: 'Input', name: 'Number of community volunteers trained',
+                data: {
+                    'State A': { current: 4000, target: 4200 }, 'State B': { current: 3500, target: 3800 },
+                    'State C': { current: 4500, target: 4500 }, 'State D': { current: 3000, target: 3500 }
+                }
+            },
+            {
+                id: 'K_I_2', program: 'KAWACH', stage: 'Input', name: 'Build awareness and capacity of community-based groups (SMCs, SHGs)',
+                data: {
+                    'State A': { current: 85, target: 90 }, 'State B': { current: 78, target: 90 },
+                    'State C': { current: 90, target: 90 }, 'State D': { current: 75, target: 90 }
+                }
+            },
+            {
+                id: 'K_I_3', program: 'KAWACH', stage: 'Input', name: 'TA to state govt - Funds unlocked for strengthening systems',
+                data: {
+                    'State A': { current: 1.5, target: 1.6 }, 'State B': { current: 1.2, target: 1.3 },
+                    'State C': { current: 1.3, target: 1.4 }, 'State D': { current: 1.0, target: 1.2 }
+                }
+            },
+            // OUTPUTS
+            {
+                id: 'K_O_1', program: 'KAWACH', stage: 'Output', name: 'Cases reported to child protection bodies - Child labor',
+                data: {
+                    'State A': { current: 200000, target: 210000 }, 'State B': { current: 180000, target: 190000 },
+                    'State C': { current: 170000, target: 180000 }, 'State D': { current: 150000, target: 155858 }
+                }
+            },
+            {
+                id: 'K_O_2', program: 'KAWACH', stage: 'Output', name: 'Cases reported to child protection bodies - Child trafficking',
+                data: {
+                    'State A': { current: 250, target: 270 }, 'State B': { current: 200, target: 220 },
+                    'State C': { current: 220, target: 230 }, 'State D': { current: 180, target: 180 }
+                }
+            },
+            {
+                id: 'K_O_3', program: 'KAWACH', stage: 'Output', name: 'Cases reported by child protection bodies - Child Marriage',
+                data: {
+                    'State A': { current: 25000, target: 26000 }, 'State B': { current: 22000, target: 23000 },
+                    'State C': { current: 21000, target: 22000 }, 'State D': { current: 20000, target: 23190 }
+                }
+            },
+            {
+                id: 'K_O_4', program: 'KAWACH', stage: 'Output', name: '% of GPs and ULBs with Child Welfare and Protection Committees - Operational',
+                data: {
+                    'State A': { current: 80, target: 85 }, 'State B': { current: 70, target: 80 },
+                    'State C': { current: 75, target: 80 }, 'State D': { current: 70, target: 75 }
+                }
+            },
+            {
+                id: 'K_O_5', program: 'KAWACH', stage: 'Output', name: 'Number of states with notified convergent plans',
+                data: {
+                    'State A': { current: 2, target: 3 }, 'State B': { current: 2, target: 2 },
+                    'State C': { current: 2, target: 3 }, 'State D': { current: 2, target: 2 }
+                }
+            },
+            // OUTCOMES
+            {
+                id: 'K_OC_1', program: 'KAWACH', stage: 'Outcome', name: '% Increase in action taken by child protection bodies to prevent child labour',
+                data: {
+                    'State A': { current: 85, target: 90 }, 'State B': { current: 75, target: 90 },
+                    'State C': { current: 80, target: 90 }, 'State D': { current: 70, target: 90 }
+                }
+            },
+            {
+                id: 'K_OC_2', program: 'KAWACH', stage: 'Outcome', name: 'Number of cases of child marriages prevented due to action taken',
+                data: {
+                    'State A': { current: 12000, target: 12500 }, 'State B': { current: 11000, target: 11500 },
+                    'State C': { current: 10000, target: 10500 }, 'State D': { current: 12000, target: 12595 }
+                }
+            },
+            {
+                id: 'K_OC_3', program: 'KAWACH', stage: 'Outcome', name: 'Number and % of out of school children (6 to < 14 yrs.) enrolled in formal education',
+                data: {
+                    'State A': { current: 65, target: 70 }, 'State B': { current: 55, target: 70 },
+                    'State C': { current: 60, target: 70 }, 'State D': { current: 50, target: 70 }
+                }
+            },
+            {
+                id: 'K_OC_4', program: 'KAWACH', stage: 'Outcome', name: '% of GPs and ULBs with CWPCs - Functional',
+                data: {
+                    'State A': { current: 70, target: 75 }, 'State B': { current: 60, target: 75 },
+                    'State C': { current: 65, target: 75 }, 'State D': { current: 55, target: 75 }
+                }
+            },
+            // IMPACT
+            {
+                id: 'K_IM_1', program: 'KAWACH', stage: 'Impact', name: 'Building children\'s capacity through collectivization - issues by collectives',
+                data: {
+                    'State A': { current: 40000, target: 42000 }, 'State B': { current: 35000, target: 38000 },
+                    'State C': { current: 38000, target: 40000 }, 'State D': { current: 37000, target: 46190 }
+                }
+            },
+            {
+                id: 'K_IM_2', program: 'KAWACH', stage: 'Impact', name: 'Number of children connected to national/state specific schemes',
+                data: {
+                    'State A': { current: 8000, target: 9000 }, 'State B': { current: 6000, target: 7000 },
+                    'State C': { current: 7000, target: 8000 }, 'State D': { current: 4000, target: 6000 }
+                }
+            },
+            {
+                id: 'K_IM_3', program: 'KAWACH', stage: 'Impact', name: 'No of districts with costed action plan for prevention and response to CM',
+                data: {
+                    'State A': { current: 4, target: 5 }, 'State B': { current: 3, target: 5 },
+                    'State C': { current: 4, target: 5 }, 'State D': { current: 4, target: 5 }
+                }
+            },
+            // SIGNIFICANCE
+            {
+                id: 'K_S_1', program: 'KAWACH', stage: 'Significance', name: 'Overall reduction in prevalence of child labor/marriage/trafficking in intervention areas',
+                data: {
+                    'State A': { current: 12, target: 15 }, 'State B': { current: 8, target: 15 },
+                    'State C': { current: 10, target: 15 }, 'State D': { current: 7, target: 15 }
+                }
+            },
+            {
+                id: 'K_S_2', program: 'KAWACH', stage: 'Significance', name: 'Increased public trust and confidence in child protection mechanisms',
+                data: {
+                    'State A': { current: 65, target: 70 }, 'State B': { current: 55, target: 70 },
+                    'State C': { current: 60, target: 70 }, 'State D': { current: 50, target: 70 }
+                }
+            },
+
+            // SAMRIDDHI Indicators (Example - not directly VAC, but for harmonization)
+            {
+                id: 'S_I_1', program: 'SAMRIDDHI', stage: 'Input', name: 'Number of women\'s self-help groups formed',
+                data: {
+                    'State A': { current: 150, target: 160 }, 'State B': { current: 120, target: 130 },
+                    'State C': { current: 180, target: 180 }, 'State D': { current: 100, target: 110 }
+                }
+            },
+            {
+                id: 'S_O_1', program: 'SAMRIDDHI', stage: 'Output', name: 'Number of micro-enterprises established by women',
+                data: {
+                    'State A': { current: 50, target: 55 }, 'State B': { current: 40, target: 45 },
+                    'State C': { current: 60, target: 60 }, 'State D': { current: 35, target: 40 }
+                }
+            },
+            {
+                id: 'S_OC_1', program: 'SAMRIDDHI', stage: 'Outcome', name: 'Increase in average household income for beneficiaries',
+                data: {
+                    'State A': { current: 15, target: 20 }, 'State B': { current: 12, target: 20 },
+                    'State C': { current: 18, target: 20 }, 'State D': { current: 10, target: 20 }
+                }
+            },
+            {
+                id: 'S_IM_1', program: 'SAMRIDDHI', stage: 'Impact', name: 'Reduction in poverty levels in intervention areas',
+                data: {
+                    'State A': { current: 8, target: 10 }, 'State B': { current: 6, target: 10 },
+                    'State C': { current: 9, target: 10 }, 'State D': { current: 5, target: 10 }
+                }
+            },
+
+            // MRC Indicators (Example - not directly VAC, but for harmonization)
+            {
+                id: 'M_I_1', program: 'MRC', stage: 'Input', name: 'Funds allocated for migrant worker support',
+                data: {
+                    'State A': { current: 2.0, target: 2.2 }, 'State B': { current: 1.8, target: 2.0 },
+                    'State C': { current: 2.5, target: 2.5 }, 'State D': { current: 1.5, target: 1.8 }
+                }
+            },
+            {
+                id: 'M_O_1', program: 'MRC', stage: 'Output', name: 'Number of migrant workers provided with legal aid',
+                data: {
+                    'State A': { current: 300, target: 320 }, 'State B': { current: 250, target: 280 },
+                    'State C': { current: 350, target: 350 }, 'State D': { current: 200, target: 230 }
+                }
+            },
+            {
+                id: 'M_OC_1', program: 'MRC', stage: 'Outcome', name: 'Percentage of migrant workers with improved living conditions',
+                data: {
+                    'State A': { current: 70, target: 80 }, 'State B': { current: 60, target: 80 },
+                    'State C': { current: 75, target: 80 }, 'State D': { current: 55, target: 80 }
+                }
+            },
+            {
+                id: 'M_IM_1', program: 'MRC', stage: 'Impact', name: 'Reduction in exploitation cases among migrant workers',
+                data: {
+                    'State A': { current: 10, target: 12 }, 'State B': { current: 8, target: 12 },
+                    'State C': { current: 11, target: 12 }, 'State D': { current: 7, target: 12 }
+                }
+            }
+        ];
+
+        // Helper function to calculate achievement and status
+        function calculateAchievement(current, target) {
+            if (target === 0) return 0;
+            return (current / target * 100).toFixed(1);
+        }
+
+        function getStatus(achievement) {
+            if (achievement >= 90) return { text: '', class: '' };
+            if (achievement >= 70) return { text: '', class: '' };
+            return { text: '', class: '' };
+        }
+
+        // Function to populate the indicator table
+        function populateIndicatorTable(selectedProgram = 'All', selectedState = 'All', selectedStage = 'All') {
+            const tableBody = document.getElementById('indicatorTableBody');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            const filteredIndicators = allIndicators.filter(indicator => {
+                const programMatch = selectedProgram === 'All' || indicator.program === selectedProgram;
+                const stageMatch = selectedStage === 'All' || indicator.stage === selectedStage;
+                return programMatch && stageMatch;
+            });
+
+            filteredIndicators.forEach(indicator => {
+                // Determine which states to display for this indicator
+                const statesToDisplay = selectedState === 'All' ? Object.keys(indicator.data) : [selectedState];
+
+                statesToDisplay.forEach(state => {
+                    if (indicator.data[state]) {
+                        const { current, target } = indicator.data[state];
+                        const achievement = calculateAchievement(current, target);
+                        const status = getStatus(parseFloat(achievement));
+
+                        // Check if this indicator-state combination is already selected for comparison
+                        const isSelectedForComparison = selectedIndicatorsForComparison.some(
+                            item => item.id === indicator.id && item.state === state
+                        );
+
+                        const row = `
+                            <tr>
+                                <td>
+                                    <input type="checkbox" class="compare-checkbox"
+                                           data-indicator-id="${indicator.id}"
+                                           data-state="${state}"
+                                           ${isSelectedForComparison ? 'checked' : ''}>
+                                </td>
+                                <td>${indicator.program}</td>
+                                <td><strong>${indicator.stage}</strong></td>
+                                <td>${indicator.name}</td>
+                                <td>${state}</td>
+                                <td>${current.toLocaleString()}</td>
+                                <td>${target.toLocaleString()}</td>
+                                <td>${achievement}%</td>
+                                <td><span class="status-dot ${status.class}"></span>${status.text}</td>
+                            </tr>
+                        `;
+                        tableBody.insertAdjacentHTML('beforeend', row);
+                    }
+                });
+            });
+
+            // Add event listeners to new checkboxes
+            document.querySelectorAll('.compare-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', handleComparisonSelection);
+            });
+            updateComparisonChart(); // Update chart after table re-render
+        }
+
+        // Chart instances
+        let frameworkBarChart;
+        let frameworkRadarChart;
+        let programStageBarChart;
+
+        // Function to update charts based on selected program, state, and stage
+        function updateCharts(selectedProgram = 'All', selectedState = 'All', selectedStage = 'All') {
+            // Destroy existing charts if they exist
+            if (frameworkBarChart) frameworkBarChart.destroy();
+            if (frameworkRadarChart) frameworkRadarChart.destroy();
+            if (programStageBarChart) programStageBarChart.destroy();
+
+            // Filter indicators based on selections
+            const filteredIndicators = allIndicators.filter(indicator => {
+                const programMatch = selectedProgram === 'All' || indicator.program === selectedProgram;
+                const stageMatch = selectedStage === 'All' || indicator.stage === selectedStage;
+                return programMatch && stageMatch;
+            });
+
+            // Aggregate data for charts
+            const aggregatedData = {
+                'Input': { count: 0, totalAchievement: 0, indicatorCount: 0 },
+                'Output': { count: 0, totalAchievement: 0, indicatorCount: 0 },
+                'Outcome': { count: 0, totalAchievement: 0, indicatorCount: 0 },
+                'Impact': { count: 0, totalAchievement: 0, indicatorCount: 0 },
+                'Significance': { count: 0, totalAchievement: 0, indicatorCount: 0 }
+            };
+
+            const programStageAchievements = {}; // For the new chart
+
+            filteredIndicators.forEach(indicator => {
+                const statesToConsider = selectedState === 'All' ? Object.keys(indicator.data) : [selectedState];
+                let indicatorAchievementSum = 0;
+                let indicatorStateCount = 0;
+
+                statesToConsider.forEach(state => {
+                    if (indicator.data[state]) {
+                        const { current, target } = indicator.data[state];
+                        const achievement = parseFloat(calculateAchievement(current, target));
+                        indicatorAchievementSum += achievement;
+                        indicatorStateCount++;
+                    }
+                });
+
+                if (indicatorStateCount > 0) {
+                    const avgIndicatorAchievement = indicatorAchievementSum / indicatorStateCount;
+                    aggregatedData[indicator.stage].count++;
+                    aggregatedData[indicator.stage].totalAchievement += avgIndicatorAchievement;
+                    aggregatedData[indicator.stage].indicatorCount++;
+
+                    // Populate data for programStageBarChart
+                    if (!programStageAchievements[indicator.program]) {
+                        programStageAchievements[indicator.program] = {
+                            'Input': { sum: 0, count: 0 },
+                            'Output': { sum: 0, count: 0 },
+                            'Outcome': { sum: 0, count: 0 },
+                            'Impact': { sum: 0, count: 0 },
+                            'Significance': { sum: 0, count: 0 }
+                        };
+                    }
+                    programStageAchievements[indicator.program][indicator.stage].sum += avgIndicatorAchievement;
+                    programStageAchievements[indicator.program][indicator.stage].count++;
+                }
+            });
+
+            // Filter out stages that are not selected for the charts if a specific stage is chosen
+            const chartStages = selectedStage === 'All' ? ['Input', 'Output', 'Outcome', 'Impact', 'Significance'] : [selectedStage];
+
+            const barChartData = chartStages.map(stage => aggregatedData[stage].count);
+            const radarChartData = chartStages.map(stage =>
+                aggregatedData[stage].indicatorCount > 0 ? (aggregatedData[stage].totalAchievement / aggregatedData[stage].indicatorCount).toFixed(1) : 0
+            );
+
+            // Framework Bar Chart
+            const barCtx = document.getElementById('frameworkBarChart').getContext('2d');
+            frameworkBarChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: chartStages,
+                    datasets: [{
+                        label: 'Number of Indicators',
+                        data: barChartData,
+                        backgroundColor: chartStages.map(stage => {
+                            if (stage === 'Input') return 'rgba(59, 130, 246, 0.7)';
+                            if (stage === 'Output') return 'rgba(16, 185, 129, 0.7)';
+                            if (stage === 'Outcome') return 'rgba(245, 158, 11, 0.7)';
+                            if (stage === 'Impact') return 'rgba(236, 72, 153, 0.7)';
+                            if (stage === 'Significance') return 'rgba(139, 92, 246, 0.7)';
+                            return 'rgba(128, 128, 128, 0.7)';
+                        }),
+                        borderColor: chartStages.map(stage => {
+                            if (stage === 'Input') return 'rgba(59, 130, 246, 1)';
+                            if (stage === 'Output') return 'rgba(16, 185, 129, 1)';
+                            if (stage === 'Outcome') return 'rgba(245, 158, 11, 1)';
+                            if (stage === 'Impact') return 'rgba(236, 72, 153, 1)';
+                            if (stage === 'Significance') return 'rgba(139, 92, 246, 1)';
+                            return 'rgba(128, 128, 128, 1)';
+                        }),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.parsed.y} indicators`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Framework Radar Chart (only if multiple stages are selected)
+            const radarChartContainer = document.getElementById('frameworkRadarChart').parentNode;
+            if (chartStages.length > 1) {
+                radarChartContainer.style.display = 'block'; // Show radar chart
+                const radarCtx = document.getElementById('frameworkRadarChart').getContext('2d');
+                frameworkRadarChart = new Chart(radarCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: chartStages,
+                        datasets: [{
+                            label: 'Average Achievement Percentage',
+                            data: radarChartData,
+                            backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                            borderColor: 'rgba(79, 70, 229, 1)',
+                            pointBackgroundColor: 'rgba(79, 70, 229, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(79, 70, 229, 1)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                angleLines: {
+                                    display: true
+                                },
+                                suggestedMin: 50,
+                                suggestedMax: 100,
+                                ticks: {
+                                    stepSize: 10
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.formattedValue}% achieved`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                radarChartContainer.style.display = 'none'; // Hide radar chart if only one stage is selected
+            }
+
+
+            // Program-wise Achievement by Stage Bar Chart
+            const programStageCtx = document.getElementById('programStageBarChart').getContext('2d');
+            const programLabels = Object.keys(programStageAchievements);
+            const programChartStageLabels = selectedStage === 'All' ? ['Input', 'Output', 'Outcome', 'Impact', 'Significance'] : [selectedStage];
+
+            const programDatasets = [];
+
+            const colors = {
+                'KAWACH': 'rgba(245, 158, 11, 0.7)', // Orange
+                'SAMRIDDHI': 'rgba(16, 185, 129, 0.7)', // Green
+                'MRC': 'rgba(59, 130, 246, 0.7)' // Blue
+            };
+
+            programChartStageLabels.forEach(stage => {
+                const dataForStage = programLabels.map(program => {
+                    const stageData = programStageAchievements[program]?.[stage];
+                    return stageData && stageData.count > 0 ? (stageData.sum / stageData.count).toFixed(1) : 0;
+                });
+
+                programDatasets.push({
+                    label: stage,
+                    data: dataForStage,
+                    backgroundColor: colors[stage] || 'rgba(128, 128, 128, 0.7)', // Fallback color
+                    borderColor: colors[stage] ? colors[stage].replace('0.7', '1') : 'rgba(128, 128, 128, 1)',
+                    borderWidth: 1
+                });
+            });
+
+            programStageBarChart = new Chart(programStageCtx, {
+                type: 'bar',
+                data: {
+                    labels: programLabels,
+                    datasets: programDatasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            stacked: false,
+                            title: {
+                                display: true,
+                                text: 'Program'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Average Achievement %'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Comparison Chart Logic ---
+        function handleComparisonSelection(event) {
+            const checkbox = event.target;
+            const indicatorId = checkbox.dataset.indicatorId;
+            const state = checkbox.dataset.state;
+
+            if (checkbox.checked) {
+                // Add to comparison list
+                const indicator = allIndicators.find(ind => ind.id === indicatorId);
+                if (indicator) {
+                    selectedIndicatorsForComparison.push({
+                        id: indicator.id,
+                        program: indicator.program,
+                        stage: indicator.stage,
+                        name: indicator.name,
+                        state: state,
+                        data: indicator.data[state]
+                    });
+                }
+            } else {
+                // Remove from comparison list
+                selectedIndicatorsForComparison = selectedIndicatorsForComparison.filter(
+                    item => !(item.id === indicatorId && item.state === state)
+                );
+            }
+            updateComparisonChart();
+        }
+
+        function updateComparisonChart() {
+            const comparisonChartSection = document.getElementById('comparisonChartSection');
+            if (selectedIndicatorsForComparison.length === 0) {
+                comparisonChartSection.classList.add('hidden');
+                if (indicatorComparisonChart) {
+                    indicatorComparisonChart.destroy();
+                    indicatorComparisonChart = null;
+                }
+                return;
+            }
+
+            comparisonChartSection.classList.remove('hidden');
+
+            if (indicatorComparisonChart) {
+                indicatorComparisonChart.destroy();
+            }
+
+            const chartLabels = ['State A', 'State B', 'State C', 'State D']; // All possible states for comparison
+
+            const datasets = selectedIndicatorsForComparison.map((item, index) => {
+                const dataPoints = chartLabels.map(stateLabel => {
+                    const stateData = allIndicators.find(ind => ind.id === item.id)?.data[stateLabel];
+                    return stateData ? parseFloat(calculateAchievement(stateData.current, stateData.target)) : null;
+                });
+
+                // Generate a unique color for each line
+                const hue = (index * 137) % 360; // Use a prime number for better distribution
+                const color = `hsl(${hue}, 70%, 50%)`;
+
+                return {
+                    label: `${item.name} (${item.program} - ${item.state})`,
+                    data: dataPoints,
+                    borderColor: color,
+                    backgroundColor: color + '20', // Light background for fill
+                    fill: false,
+                    tension: 0.3,
+                    spanGaps: true // Connect points even if some states have no data
+                };
+            });
+
+            const compCtx = document.getElementById('indicatorComparisonChart').getContext('2d');
+            indicatorComparisonChart = new Chart(compCtx, {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Achievement %'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'State'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                boxWidth: 20,
+                                padding: 10
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+
+        // --- Event Listeners and Initial Load ---
+        document.getElementById('programFilter').addEventListener('change', filterData);
+        document.getElementById('stateFilter').addEventListener('change', filterData);
+
+        document.querySelectorAll('.framework-stage-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.framework-stage-item').forEach(el => el.classList.remove('active-stage'));
+                this.classList.add('active-stage');
+                currentStageFilter = this.dataset.stage;
+                filterData();
+            });
+        });
+
+        document.getElementById('resetStageFilter').addEventListener('click', function() {
+            document.querySelectorAll('.framework-stage-item').forEach(el => el.classList.remove('active-stage'));
+            currentStageFilter = 'All';
+            filterData();
+        });
+
+        function filterData() {
+            const selectedProgram = document.getElementById('programFilter').value;
+            const selectedState = document.getElementById('stateFilter').value;
+            populateIndicatorTable(selectedProgram, selectedState, currentStageFilter);
+            updateCharts(selectedProgram, selectedState, currentStageFilter);
+            // The comparison chart is updated by populateIndicatorTable which calls updateComparisonChart
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            filterData();
+        });
+    </script>
+</body>
+</html>
