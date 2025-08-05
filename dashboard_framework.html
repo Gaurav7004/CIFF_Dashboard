@@ -1,0 +1,1898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indicator Framework Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .tab-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+        
+        .tab-nav {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 0;
+            display: flex;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 20px 30px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tab-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            transition: left 0.3s ease;
+        }
+        
+        .tab-button:hover::before {
+            left: 0;
+        }
+        
+        .tab-button.active {
+            background: rgba(255,255,255,0.2);
+            border-bottom-color: #f39c12;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 30px;
+            min-height: calc(100vh - 80px);
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .dashboard-header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        
+        .dashboard-header p {
+            font-size: 1.1rem;
+            color: #666;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-left: 5px solid;
+            transition: transform 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .metric-card.samriddhi { border-left-color: #2ecc71; }
+        .metric-card.kawach { border-left-color: #f39c12; }
+        .metric-card.mrc { border-left-color: #e74c3c; }
+        .metric-card.overall { border-left-color: #3498db; }
+        
+        .metric-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .metric-program {
+            font-size: 0.8rem;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        
+        .samriddhi .metric-number { color: #2ecc71; }
+        .kawach .metric-number { color: #f39c12; }
+        .mrc .metric-number { color: #e74c3c; }
+        .overall .metric-number { color: #3498db; }
+        
+        .samriddhi .metric-program { background: #d4edda; color: #155724; }
+        .kawach .metric-program { background: #fff3cd; color: #856404; }
+        .mrc .metric-program { background: #f8d7da; color: #721c24; }
+        .overall .metric-program { background: #cce5ff; color: #004085; }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .chart-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
+        }
+        
+        .progress-bars {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .progress-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .progress-label {
+            font-weight: 600;
+            min-width: 100px;
+        }
+        
+        .progress-bar {
+            flex: 1;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1s ease;
+            position: relative;
+        }
+        
+        .progress-fill.input { background: linear-gradient(90deg, #3498db, #5dade2); }
+        .progress-fill.output { background: linear-gradient(90deg, #2ecc71, #58d68d); }
+        .progress-fill.outcome { background: linear-gradient(90deg, #f39c12, #f8c471); }
+        .progress-fill.impact { background: linear-gradient(90deg, #e74c3c, #ec7063); }
+        .progress-fill.significance { background: linear-gradient(90deg, #9b59b6, #af7ac5); } /* New color for Significance */
+        
+        .progress-value {
+            font-weight: bold;
+            min-width: 40px;
+            text-align: right;
+        }
+        
+        .data-table {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        
+        .data-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .trend-positive {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .trend-negative {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .status-indicator {
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .status-on-track { background: #d4edda; color: #155724; }
+        .status-at-risk { background: #fff3cd; color: #856404; }
+        .status-off-track { background: #f8d7da; color: #721c24; }
+        
+        .filter-controls {
+            background: rgba(255,255,255,0.9);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .framework-flow {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            flex-wrap: wrap; /* Allow wrapping for smaller screens */
+        }
+        
+        .flow-stage {
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            margin: 0 10px;
+            white-space: nowrap; /* Prevent text wrapping inside stage */
+        }
+        
+        .flow-stage.input { background: #3498db; }
+        .flow-stage.output { background: #2ecc71; }
+        .flow-stage.outcome { background: #f39c12; }
+        .flow-stage.impact { background: #e74c3c; }
+        .flow-stage.significance { background: #9b59b6; } /* New color for Significance */
+        
+        .flow-arrow {
+            font-size: 1.5rem;
+            color: white;
+            margin: 0 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .tab-nav {
+                flex-wrap: wrap;
+            }
+            
+            .tab-button {
+                flex: 1;
+                min-width: 120px;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-header h1 {
+                font-size: 2rem;
+            }
+
+            .framework-flow {
+                flex-direction: column;
+            }
+
+            .flow-arrow {
+                transform: rotate(90deg);
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="tab-container">
+        <div class="tab-nav">
+            <button class="tab-button active" onclick="showTab('overview')">Overview</button>
+            <button class="tab-button" onclick="showTab('framework')">Framework Mapping</button>
+            <button class="tab-button" onclick="showTab('performance')">Performance</button>
+            <button class="tab-button" onclick="showTab('vacImpactFramework')">VAC Impact Framework</button> <!-- New Tab -->
+            <button class="tab-button" onclick="showTab('trends')">Trends</button>
+        </div>
+        
+        <!-- Overview Tab -->
+        <div class="tab-content active" id="overview">
+            <div class="dashboard-header">
+                <h1>Dashboard Overview</h1>
+                <p>Comprehensive view of all programs and their indicator performance</p>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card overall">
+                    <div class="metric-number">62</div>
+                    <div class="metric-label">Total Indicators</div>
+                    <div class="metric-program">ALL PROGRAMS</div>
+                </div>
+                <div class="metric-card samriddhi">
+                    <div class="metric-number">78%</div>
+                    <div class="metric-label">Target Achievement</div>
+                    <div class="metric-program">SAMRIDDHI</div>
+                </div>
+                <div class="metric-card kawach">
+                    <div class="metric-number">85%</div>
+                    <div class="metric-label">Target Achievement</div>
+                    <div class="metric-program">KAWACH</div>
+                </div>
+                <div class="metric-card mrc">
+                    <div class="metric-number">72%</div>
+                    <div class="metric-label">Target Achievement</div>
+                    <div class="metric-program">MRC</div>
+                </div>
+            </div>
+            
+            <div class="framework-flow">
+                <div class="flow-stage input">INPUTS (8)</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-stage output">OUTPUTS (25)</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-stage outcome">OUTCOMES (18)</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-stage impact">IMPACT (11)</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-stage significance">SIGNIFICANCE (5)</div> <!-- New Stage -->
+            </div>
+            
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">Program Distribution</div>
+                    <canvas id="programChart" width="400" height="300"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">Framework Stage Progress</div>
+                    <div class="progress-bars">
+                        <div class="progress-item">
+                            <div class="progress-label">Inputs</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill input" style="width: 95%"></div>
+                            </div>
+                            <div class="progress-value">95%</div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-label">Outputs</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill output" style="width: 82%"></div>
+                            </div>
+                            <div class="progress-value">82%</div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-label">Outcomes</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill outcome" style="width: 68%"></div>
+                            </div>
+                            <div class="progress-value">68%</div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-label">Impact</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill impact" style="width: 45%"></div>
+                            </div>
+                            <div class="progress-value">45%</div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-label">Significance</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill significance" style="width: 30%"></div>
+                            </div>
+                            <div class="progress-value">30%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">Monthly Performance Trend</div>
+                    <canvas id="trendChart" width="400" height="300"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">Indicator Type Distribution</div>
+                    <canvas id="typeChart" width="400" height="300"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">State-wise Performance</div>
+                    <canvas id="stateChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Framework Tab -->
+        <div class="tab-content" id="framework">
+            <div class="dashboard-header">
+                <h1>Framework Analysis</h1>
+                <p>Detailed breakdown of indicators across the logic model framework</p>
+            </div>
+            
+            <div class="filter-controls">
+                <label>Program:</label>
+                <select class="filter-select" id="programFilter">
+                    <option value="all">All Programs</option>
+                    <option value="samriddhi">SAMRIDDHI</option>
+                    <option value="kawach">KAWACH</option>
+                    <option value="mrc">MRC</option>
+                </select>
+                
+                <label>Indicator Type:</label>
+                <select class="filter-select" id="typeFilter">
+                    <option value="all">All Types</option>
+                    <option value="kpi">KPI</option>
+                    <option value="interim">Interim</option>
+                    <option value="activity">Activity</option>
+                </select>
+            </div>
+            
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">Framework Stage Effectiveness</div>
+                    <canvas id="effectivenessChart" width="400" height="300"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">Cross-Program Comparison</div>
+                    <canvas id="comparisonChart" width="400" height="300"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Program-wise Indicator Count</div>
+                    <canvas id="programIndicatorCountChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+            
+            <div class="data-table">
+                <div class="chart-title">Framework Mapping Summary</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Stage</th>
+                            <th>SAMRIDDHI</th>
+                            <th>KAWACH</th>
+                            <th>MRC</th>
+                            <th>Total</th>
+                            <th>Avg Performance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Inputs</strong></td>
+                            <td>1</td>
+                            <td>3</td>
+                            <td>4</td>
+                            <td>8</td>
+                            <td><span class="trend-positive">94.5%</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Outputs</strong></td>
+                            <td>4</td>
+                            <td>9</td>
+                            <td>12</td>
+                            <td>25</td>
+                            <td><span class="trend-positive">81.8%</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Outcomes</strong></td>
+                            <td>4</td>
+                            <td>9</td>
+                            <td>5</td>
+                            <td>18</td>
+                            <td><span class="trend-positive">67.3%</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Impact</strong></td>
+                            <td>2</td>
+                            <td>5</td>
+                            <td>4</td>
+                            <td>11</td>
+                            <td><span class="trend-negative">44.8%</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Significance</strong></td> <!-- New Row -->
+                            <td>1</td>
+                            <td>2</td>
+                            <td>2</td>
+                            <td>5</td>
+                            <td><span class="trend-negative">30.0%</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Performance Tab -->
+        <div class="tab-content" id="performance">
+            <div class="dashboard-header">
+                <h1>Performance Analytics</h1>
+                <p>Real-time performance tracking and achievement analysis</p>
+            </div>
+            
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">Target vs Achievement</div>
+                    <canvas id="achievementChart" width="400" height="300"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">Performance by Quarter</div>
+                    <canvas id="quarterChart" width="400" height="300"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Indicator-wise Performance</div>
+                    <canvas id="indicatorPerformanceChart" width="400" height="300"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Indicator Status Distribution</div>
+                    <canvas id="statusDistributionChart" width="400" height="300"></canvas>
+                </div>
+
+                <!-- New VAC Charts -->
+                <div class="chart-container">
+                    <div class="chart-title">VAC Cases Reported & Prevented (KAWACH)</div>
+                    <canvas id="vacCasesChart" width="400" height="300"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Child/Collective Reporting Trends (KAWACH)</div>
+                    <canvas id="vacReportingTrendChart" width="400" height="300"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">State-wise VAC Cases (Simulated)</div>
+                    <canvas id="vacStateChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+            
+            <div class="data-table">
+                <div class="chart-title">Key Performance Indicators Status</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Indicator</th>
+                            <th>Program</th>
+                            <th>Target</th>
+                            <th>Current</th>
+                            <th>Achievement</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Girls with scholarships</td>
+                            <td>SAMRIDDHI</td>
+                            <td>50,000</td>
+                            <td>42,500</td>
+                            <td>85%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>Child protection cases</td>
+                            <td>KAWACH</td>
+                            <td>1,200</td>
+                            <td>1,050</td>
+                            <td>87.5%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>Workers rescued</td>
+                            <td>MRC</td>
+                            <td>800</td>
+                            <td>520</td>
+                            <td>65%</td>
+                            <td><span class="status-indicator status-at-risk">At Risk</span></td>
+                        </tr>
+                        <tr>
+                            <td>Benefits facilitated ($M)</td>
+                            <td>MRC</td>
+                            <td>2.5</td>
+                            <td>1.2</td>
+                            <td>48%</td>
+                            <td><span class="status-indicator status-off-track">Off Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>Community engagement sessions</td>
+                            <td>SAMRIDDHI</td>
+                            <td>150</td>
+                            <td>140</td>
+                            <td>93.3%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>Legal aid provided</td>
+                            <td>KAWACH</td>
+                            <td>300</td>
+                            <td>210</td>
+                            <td>70%</td>
+                            <td><span class="status-indicator status-at-risk">At Risk</span></td>
+                        </tr>
+                        <tr>
+                            <td>Vocational training participants</td>
+                            <td>MRC</td>
+                            <td>1000</td>
+                            <td>600</td>
+                            <td>60%</td>
+                            <td><span class="status-indicator status-off-track">Off Track</span></td>
+                        </tr>
+                        <!-- VAC Specific Indicators -->
+                        <tr>
+                            <td>Number of cases reported to child protection bodies -Child labor</td>
+                            <td>KAWACH</td>
+                            <td>735858</td>
+                            <td>700000</td>
+                            <td>95.1%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>Number of cases reported to child protection bodies.- Child trafficking</td>
+                            <td>KAWACH</td>
+                            <td>900</td>
+                            <td>850</td>
+                            <td>94.4%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>Number of cases reported by child protection bodies-Child Marriage</td>
+                            <td>KAWACH</td>
+                            <td>94190</td>
+                            <td>88000</td>
+                            <td>93.4%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>Number of cases of child marriages prevented due to action taken by child protection bodies</td>
+                            <td>KAWACH</td>
+                            <td>47095</td>
+                            <td>45000</td>
+                            <td>95.6%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>No of CM/CT/CL issues brought forward by collectives</td>
+                            <td>KAWACH</td>
+                            <td>166190</td>
+                            <td>150000</td>
+                            <td>90.3%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>No of CM/CT/CL issues brought forward by children</td>
+                            <td>KAWACH</td>
+                            <td>75000</td>
+                            <td>68000</td>
+                            <td>90.6%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- VAC Impact Framework Tab -->
+        <div class="tab-content" id="vacImpactFramework">
+            <div class="dashboard-header">
+                <h1>Violence Against Children (VAC) Impact Framework</h1>
+                <p>Mapping KAWACH indicators across the Input → Output → Outcome → Impact → Significance framework</p>
+            </div>
+
+            <div class="framework-flow">
+                <div class="flow-stage input">INPUTS</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-stage output">OUTPUTS</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-stage outcome">OUTCOMES</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-stage impact">IMPACT</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-stage significance">SIGNIFICANCE</div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">VAC Indicators by Framework Stage</div>
+                    <canvas id="vacFrameworkCountChart" width="400" height="300"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">VAC Framework Progress (Simulated)</div>
+                    <canvas id="vacFrameworkProgressChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+
+            <div class="data-table">
+                <div class="chart-title">VAC Indicators Mapped to Framework Stages</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Framework Stage</th>
+                            <th>Indicator Name</th>
+                            <th>Current Value</th>
+                            <th>Target Value</th>
+                            <th>Achievement %</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- INPUTS -->
+                        <tr>
+                            <td rowspan="3"><strong>INPUTS</strong><br><small>Resources, capacity building for VAC prevention</small></td>
+                            <td>Number of community volunteers trained</td>
+                            <td>15,000</td>
+                            <td>16,000</td>
+                            <td>93.8%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>Build awareness and capacity of community-based groups (SMCs, SHGs)</td>
+                            <td>80%</td>
+                            <td>90%</td>
+                            <td>88.9%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>TA to state govt - Funds unlocked from government for strengthening systems</td>
+                            <td>$5M</td>
+                            <td>$5.5M</td>
+                            <td>90.9%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <!-- OUTPUTS -->
+                        <tr>
+                            <td rowspan="5"><strong>OUTPUTS</strong><br><small>Direct results of VAC prevention activities</small></td>
+                            <td>Number of cases reported to child protection bodies - Child labor</td>
+                            <td>700,000</td>
+                            <td>735,858</td>
+                            <td>95.1%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>Number of cases reported to child protection bodies - Child trafficking</td>
+                            <td>850</td>
+                            <td>900</td>
+                            <td>94.4%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>Number of cases reported by child protection bodies - Child Marriage</td>
+                            <td>88,000</td>
+                            <td>94,190</td>
+                            <td>93.4%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>% of GPs and ULBs with Child Welfare and Protection Committees - Operational</td>
+                            <td>75%</td>
+                            <td>80%</td>
+                            <td>93.8%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>Number of states with notified convergent plans</td>
+                            <td>8</td>
+                            <td>10</td>
+                            <td>80.0%</td>
+                            <td><span class="status-indicator status-at-risk">At Risk</span></td>
+                        </tr>
+                        <!-- OUTCOMES -->
+                        <tr>
+                            <td rowspan="4"><strong>OUTCOMES</strong><br><small>Behavioral changes, improved access, reduced vulnerability to VAC</small></td>
+                            <td>% Increase in action taken by child protection bodies to prevent child labour</td>
+                            <td>80%</td>
+                            <td>90%</td>
+                            <td>88.9%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>Number of cases of child marriages prevented due to action taken</td>
+                            <td>45,000</td>
+                            <td>47,095</td>
+                            <td>95.6%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>Number and % of out of school children (6 to < 14 yrs.) enrolled in formal education</td>
+                            <td>60%</td>
+                            <td>70%</td>
+                            <td>85.7%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>% of GPs and ULBs with CWPCs - Functional</td>
+                            <td>65%</td>
+                            <td>75%</td>
+                            <td>86.7%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <!-- IMPACT -->
+                        <tr>
+                            <td rowspan="3"><strong>IMPACT</strong><br><small>Long-term societal change, violence reduction, wellbeing</small></td>
+                            <td>Building children's capacity through collectivization - issues brought forward by collectives</td>
+                            <td>150,000</td>
+                            <td>166,190</td>
+                            <td>90.3%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>Number of children connected to national/state specific schemes</td>
+                            <td>25,000</td>
+                            <td>30,000</td>
+                            <td>83.3%</td>
+                            <td><span class="status-indicator status-at-risk">At Risk</span></td>
+                        </tr>
+                        <tr>
+                            <td>No of districts with costed action plan for prevention and response to CM</td>
+                            <td>15</td>
+                            <td>20</td>
+                            <td>75.0%</td>
+                            <td><span class="status-indicator status-at-risk">At Risk</span></td>
+                        </tr>
+                        <!-- SIGNIFICANCE -->
+                        <tr>
+                            <td rowspan="2"><strong>SIGNIFICANCE</strong><br><small>Ultimate societal change, systemic shift in child protection</small></td>
+                            <td>Overall reduction in prevalence of child labor/marriage/trafficking in intervention areas</td>
+                            <td>10%</td>
+                            <td>15%</td>
+                            <td>66.7%</td>
+                            <td><span class="status-indicator status-off-track">Off Track</span></td>
+                        </tr>
+                        <tr>
+                            <td>Increased public trust and confidence in child protection mechanisms</td>
+                            <td>60%</td>
+                            <td>70%</td>
+                            <td>85.7%</td>
+                            <td><span class="status-indicator status-on-track">On Track</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Trends Tab -->
+        <div class="tab-content" id="trends">
+            <div class="dashboard-header">
+                <h1>Trend Analysis</h1>
+                <p>Historical performance and predictive insights</p>
+            </div>
+            
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">12-Month Trend Analysis</div>
+                    <canvas id="yearTrendChart" width="400" height="300"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">Impact Trajectory</div>
+                    <canvas id="impactChart" width="400" height="300"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">Seasonal Performance Patterns</div>
+                    <canvas id="seasonalChart" width="400" height="300"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">Predictive Forecast</div>
+                    <canvas id="forecastChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global Chart instances to prevent re-initialization issues
+        let programChart, trendChart, typeChart, stateChart;
+        let effectivenessChart, comparisonChart, programIndicatorCountChart;
+        let achievementChart, quarterChart, indicatorPerformanceChart, statusDistributionChart;
+        let vacCasesChart, vacReportingTrendChart, vacStateChart;
+        let vacFrameworkCountChart, vacFrameworkProgressChart; // New VAC framework charts
+        let yearTrendChart, impactChart, seasonalChart, forecastChart;
+
+        // Tab functionality
+        function showTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+            
+            // Show selected tab and activate button
+            document.getElementById(tabName).classList.add('active');
+            // Use event.currentTarget to ensure the correct button is activated
+            const clickedButton = event.currentTarget;
+            if (clickedButton) {
+                clickedButton.classList.add('active');
+            } else {
+                // Fallback for initial load or if event is not available
+                document.querySelector(`.tab-button[onclick="showTab('${tabName}')"]`).classList.add('active');
+            }
+            
+            // Initialize charts for the active tab
+            // Use a small timeout to ensure the canvas element is visible before chart rendering
+            setTimeout(() => initializeCharts(tabName), 100);
+        }
+        
+        // Chart initialization
+        function initializeCharts(tabName) {
+            // Destroy existing chart instances to prevent duplicates and memory leaks
+            destroyAllCharts();
+
+            if (tabName === 'overview') {
+                initOverviewCharts();
+            } else if (tabName === 'framework') {
+                initFrameworkCharts();
+            } else if (tabName === 'performance') {
+                initPerformanceCharts();
+            } else if (tabName === 'vacImpactFramework') { // New tab initialization
+                initVACImpactFrameworkCharts();
+            } else if (tabName === 'trends') {
+                initTrendCharts();
+            }
+        }
+
+        function destroyAllCharts() {
+            if (programChart) programChart.destroy();
+            if (trendChart) trendChart.destroy();
+            if (typeChart) typeChart.destroy();
+            if (stateChart) stateChart.destroy();
+
+            if (effectivenessChart) effectivenessChart.destroy();
+            if (comparisonChart) comparisonChart.destroy();
+            if (programIndicatorCountChart) programIndicatorCountChart.destroy();
+
+            if (achievementChart) achievementChart.destroy();
+            if (quarterChart) quarterChart.destroy();
+            if (indicatorPerformanceChart) indicatorPerformanceChart.destroy();
+            if (statusDistributionChart) statusDistributionChart.destroy();
+            if (vacCasesChart) vacCasesChart.destroy();
+            if (vacReportingTrendChart) vacReportingTrendChart.destroy();
+            if (vacStateChart) vacStateChart.destroy();
+
+            if (vacFrameworkCountChart) vacFrameworkCountChart.destroy(); // Destroy new VAC framework charts
+            if (vacFrameworkProgressChart) vacFrameworkProgressChart.destroy(); // Destroy new VAC framework charts
+
+            if (yearTrendChart) yearTrendChart.destroy();
+            if (impactChart) impactChart.destroy();
+            if (seasonalChart) seasonalChart.destroy();
+            if (forecastChart) forecastChart.destroy();
+        }
+        
+        function initOverviewCharts() {
+            // Program Distribution Chart
+            const programCtx = document.getElementById('programChart');
+            if (programCtx) {
+                programChart = new Chart(programCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['SAMRIDDHI', 'KAWACH', 'MRC'],
+                        datasets: [{
+                            data: [11, 26, 25],
+                            backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Monthly Performance Trend Chart
+            const trendCtx = document.getElementById('trendChart');
+            if (trendCtx) {
+                trendChart = new Chart(trendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Overall Performance',
+                            data: [65, 68, 72, 75, 78, 82],
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Indicator Type Distribution Chart
+            const typeCtx = document.getElementById('typeChart');
+            if (typeCtx) {
+                typeChart = new Chart(typeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['KPI', 'Interim', 'Activity'],
+                        datasets: [{
+                            data: [45, 14, 3],
+                            backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+
+            // State-wise Performance Chart
+            const stateCtx = document.getElementById('stateChart');
+            if (stateCtx) {
+                stateChart = new Chart(stateCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['State A', 'State B', 'State C', 'State D'],
+                        datasets: [{
+                            label: 'Avg. Achievement %',
+                            data: [75, 88, 65, 92],
+                            backgroundColor: ['#3498db', '#2ecc71', '#f39c12', '#9b59b6']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        function initFrameworkCharts() {
+            // Effectiveness Chart
+            const effectivenessCtx = document.getElementById('effectivenessChart');
+            if (effectivenessCtx) {
+                effectivenessChart = new Chart(effectivenessCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Inputs', 'Outputs', 'Outcomes', 'Impact', 'Significance'],
+                        datasets: [{
+                            label: 'Performance',
+                            data: [95, 82, 68, 45, 30],
+                            backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                            borderColor: '#3498db',
+                            pointBackgroundColor: '#3498db'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Cross-Program Comparison Chart
+            const comparisonCtx = document.getElementById('comparisonChart');
+            if (comparisonCtx) {
+                comparisonChart = new Chart(comparisonCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Inputs', 'Outputs', 'Outcomes', 'Impact', 'Significance'],
+                        datasets: [
+                            {
+                                label: 'SAMRIDDHI',
+                                data: [1, 4, 4, 2, 1],
+                                backgroundColor: '#2ecc71'
+                            },
+                            {
+                                label: 'KAWACH',
+                                data: [3, 9, 9, 5, 2],
+                                backgroundColor: '#f39c12'
+                            },
+                            {
+                                label: 'MRC',
+                                data: [4, 12, 5, 4, 2],
+                                backgroundColor: '#e74c3c'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {
+                                stacked: true
+                            },
+                            y: {
+                                stacked: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Program-wise Indicator Count Chart
+            const programIndicatorCountCtx = document.getElementById('programIndicatorCountChart');
+            if (programIndicatorCountCtx) {
+                programIndicatorCountChart = new Chart(programIndicatorCountCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['SAMRIDDHI', 'KAWACH', 'MRC'],
+                        datasets: [{
+                            label: 'Total Indicators',
+                            data: [11, 26, 25], // Sum of indicators per program from the table
+                            backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Number of Indicators'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        function initPerformanceCharts() {
+            // Target vs Achievement Chart
+            const achievementCtx = document.getElementById('achievementChart');
+            if (achievementCtx) {
+                achievementChart = new Chart(achievementCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['SAMRIDDHI', 'KAWACH', 'MRC'],
+                        datasets: [
+                            {
+                                label: 'Target',
+                                data: [100, 100, 100],
+                                backgroundColor: '#ecf0f1'
+                            },
+                            {
+                                label: 'Achieved',
+                                data: [78, 85, 72],
+                                backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c']
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Performance by Quarter Chart
+            const quarterCtx = document.getElementById('quarterChart');
+            if (quarterCtx) {
+                quarterChart = new Chart(quarterCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                        datasets: [
+                            {
+                                label: 'SAMRIDDHI',
+                                data: [45, 62, 71, 78],
+                                borderColor: '#2ecc71',
+                                backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'KAWACH',
+                                data: [52, 68, 79, 85],
+                                borderColor: '#f39c12',
+                                backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'MRC',
+                                data: [38, 54, 65, 72],
+                                borderColor: '#e74c3c',
+                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Indicator-wise Performance Chart
+            const indicatorPerformanceCtx = document.getElementById('indicatorPerformanceChart');
+            if (indicatorPerformanceCtx) {
+                indicatorPerformanceChart = new Chart(indicatorPerformanceCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: [
+                            'Girls with scholarships',
+                            'Child protection cases',
+                            'Workers rescued',
+                            'Benefits facilitated ($M)',
+                            'Community engagement sessions',
+                            'Legal aid provided',
+                            'Vocational training participants'
+                        ],
+                        datasets: [{
+                            label: 'Achievement %',
+                            data: [85, 87.5, 65, 48, 93.3, 70, 60],
+                            backgroundColor: [
+                                '#2ecc71', '#2ecc71', '#f39c12', '#e74c3c',
+                                '#2ecc71', '#f39c12', '#e74c3c'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        indexAxis: 'y', // Make it a horizontal bar chart
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                max: 100,
+                                title: {
+                                    display: true,
+                                    text: 'Achievement %'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Indicator Status Distribution Chart
+            const statusDistributionCtx = document.getElementById('statusDistributionChart');
+            if (statusDistributionCtx) {
+                statusDistributionChart = new Chart(statusDistributionCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['On Track', 'At Risk', 'Off Track'],
+                        datasets: [{
+                            data: [3, 2, 2], // Based on sample data in the table
+                            backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // New VAC Cases Reported & Prevented Chart
+            const vacCasesCtx = document.getElementById('vacCasesChart');
+            if (vacCasesCtx) {
+                vacCasesChart = new Chart(vacCasesCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: [
+                            'Child Labor Cases Reported',
+                            'Child Trafficking Cases Reported',
+                            'Child Marriage Cases Reported',
+                            'Child Marriages Prevented'
+                        ],
+                        datasets: [
+                            {
+                                label: 'Reported Cases (Y3 Target)',
+                                data: [735858, 900, 94190, 0], // 0 for prevented as it's a separate metric
+                                backgroundColor: 'rgba(52, 152, 219, 0.7)'
+                            },
+                            {
+                                label: 'Actual (Current Value)',
+                                data: [700000, 850, 88000, 45000], // Sample current values
+                                backgroundColor: 'rgba(46, 204, 113, 0.7)'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Number of Cases'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // New Child/Collective Reporting Trends Chart
+            const vacReportingTrendCtx = document.getElementById('vacReportingTrendChart');
+            if (vacReportingTrendCtx) {
+                vacReportingTrendChart = new Chart(vacReportingTrendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Y1', 'Y2', 'Y3'], // Assuming annual data points
+                        datasets: [
+                            {
+                                label: 'Issues by Collectives',
+                                data: [15450, 100200, 150000], // Y1, Y2, Current (simulated for Y3)
+                                borderColor: '#f39c12',
+                                backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                                tension: 0.4,
+                                fill: false
+                            },
+                            {
+                                label: 'Issues by Children',
+                                data: [15000, 30000, 68000], // Y1, Y2, Current (simulated for Y3)
+                                borderColor: '#9b59b6',
+                                backgroundColor: 'rgba(155, 89, 182, 0.1)',
+                                tension: 0.4,
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Number of Issues Reported'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // New State-wise VAC Cases (Simulated)
+            const vacStateCtx = document.getElementById('vacStateChart');
+            if (vacStateCtx) {
+                vacStateChart = new Chart(vacStateCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['State X', 'State Y', 'State Z', 'State W'],
+                        datasets: [
+                            {
+                                label: 'Child Labor Cases',
+                                data: [250000, 180000, 120000, 150000], // Simulated data
+                                backgroundColor: 'rgba(231, 76, 60, 0.7)'
+                            },
+                            {
+                                label: 'Child Marriage Cases',
+                                data: [30000, 25000, 15000, 18000], // Simulated data
+                                backgroundColor: 'rgba(52, 152, 219, 0.7)'
+                            },
+                            {
+                                label: 'Child Trafficking Cases',
+                                data: [300, 200, 150, 200], // Simulated data
+                                backgroundColor: 'rgba(46, 204, 113, 0.7)'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {
+                                stacked: true,
+                                title: {
+                                    display: true,
+                                    text: 'State'
+                                }
+                            },
+                            y: {
+                                stacked: true,
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Total Cases'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // New function for VAC Impact Framework charts
+        function initVACImpactFrameworkCharts() {
+            // VAC Indicators by Framework Stage (Stacked Bar Chart)
+            const vacFrameworkCountCtx = document.getElementById('vacFrameworkCountChart');
+            if (vacFrameworkCountCtx) {
+                vacFrameworkCountChart = new Chart(vacFrameworkCountCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Inputs', 'Outputs', 'Outcomes', 'Impact', 'Significance'],
+                        datasets: [{
+                            label: 'Number of VAC Indicators',
+                            data: [3, 5, 4, 3, 2], // Based on the table data
+                            backgroundColor: ['#3498db', '#2ecc71', '#f39c12', '#e74c3c', '#9b59b6']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Number of Indicators'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+
+            // VAC Framework Progress (Radar Chart)
+            const vacFrameworkProgressCtx = document.getElementById('vacFrameworkProgressChart');
+            if (vacFrameworkProgressCtx) {
+                vacFrameworkProgressChart = new Chart(vacFrameworkProgressCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Inputs', 'Outputs', 'Outcomes', 'Impact', 'Significance'],
+                        datasets: [{
+                            label: 'Average Achievement %',
+                            data: [91.9, 91.5, 89.2, 82.2, 76.2], // Calculated average achievement for each stage from table
+                            backgroundColor: 'rgba(155, 89, 182, 0.2)',
+                            borderColor: '#9b59b6',
+                            pointBackgroundColor: '#9b59b6'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100,
+                                pointLabels: {
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        function initTrendCharts() {
+            // Year Trend Chart
+            const yearTrendCtx = document.getElementById('yearTrendChart');
+            if (yearTrendCtx) {
+                yearTrendChart = new Chart(yearTrendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                        datasets: [
+                            {
+                                label: 'SAMRIDDHI',
+                                data: [45, 48, 52, 58, 62, 68, 71, 74, 76, 78, 79, 82],
+                                borderColor: '#2ecc71',
+                                backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'KAWACH',
+                                data: [52, 55, 60, 65, 68, 72, 76, 79, 81, 83, 84, 85],
+                                borderColor: '#f39c12',
+                                backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'MRC',
+                                data: [38, 42, 46, 50, 54, 58, 62, 65, 68, 70, 71, 72],
+                                borderColor: '#e74c3c',
+                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Impact Chart
+            const impactCtx = document.getElementById('impactChart');
+            if (impactCtx) {
+                impactChart = new Chart(impactCtx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: 'Impact Indicators',
+                            data: [
+                                {x: 1, y: 25},
+                                {x: 2, y: 32},
+                                {x: 3, y: 38},
+                                {x: 4, y: 42},
+                                {x: 5, y: 45},
+                                {x: 6, y: 48}
+                            ],
+                            backgroundColor: '#e74c3c',
+                            borderColor: '#e74c3c'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Time Period'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Achievement %'
+                                },
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Seasonal Chart
+            const seasonalCtx = document.getElementById('seasonalChart');
+            if (seasonalCtx) {
+                seasonalChart = new Chart(seasonalCtx, {
+                    type: 'polarArea',
+                    data: {
+                        labels: ['Spring', 'Summer', 'Monsoon', 'Winter'],
+                        datasets: [{
+                            data: [75, 82, 68, 78],
+                            backgroundColor: [
+                                'rgba(46, 204, 113, 0.7)',
+                                'rgba(243, 156, 18, 0.7)',
+                                'rgba(52, 152, 219, 0.7)',
+                                'rgba(155, 89, 182, 0.7)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Forecast Chart
+            const forecastCtx = document.getElementById('forecastChart');
+            if (forecastCtx) {
+                forecastChart = new Chart(forecastCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Current', '+1M', '+2M', '+3M', '+4M', '+5M', '+6M'],
+                        datasets: [
+                            {
+                                label: 'Projected Performance',
+                                data: [78, 80, 82, 84, 86, 87, 89],
+                                borderColor: '#3498db',
+                                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                                tension: 0.4,
+                                borderDash: [5, 5]
+                            },
+                            {
+                                label: 'Confidence Range',
+                                data: [78, 78, 79, 81, 83, 84, 86],
+                                borderColor: '#95a5a6',
+                                backgroundColor: 'rgba(149, 165, 166, 0.1)',
+                                tension: 0.4,
+                                fill: '+1'
+                            },
+                            {
+                                label: 'Upper Bound',
+                                data: [78, 82, 85, 87, 89, 90, 92],
+                                borderColor: '#95a5a6',
+                                backgroundColor: 'rgba(149, 165, 166, 0.1)',
+                                tension: 0.4,
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Filter functionality
+        document.getElementById('programFilter')?.addEventListener('change', function() {
+            // Implement filter logic here
+            console.log('Program filter changed to:', this.value);
+            // You would typically re-render charts or tables based on this filter
+        });
+        
+        document.getElementById('typeFilter')?.addEventListener('change', function() {
+            // Implement filter logic here
+            console.log('Type filter changed to:', this.value);
+            // You would typically re-render charts or tables based on this filter
+        });
+        
+        // Initialize default charts on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            showTab('overview'); // Activate and initialize charts for the overview tab by default
+            
+            // Animate progress bars
+            setTimeout(() => {
+                const progressBars = document.querySelectorAll('.progress-fill');
+                progressBars.forEach(bar => {
+                    const width = bar.style.width;
+                    bar.style.width = '0%'; // Reset to 0 for animation
+                    setTimeout(() => {
+                        bar.style.width = width; // Animate to original width
+                    }, 100);
+                });
+            }, 500);
+        });
+        
+        // Add interactive hover effects
+        document.querySelectorAll('.metric-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+        
+        // Real-time data simulation
+        function simulateRealTimeData() {
+            const metrics = document.querySelectorAll('.metric-number');
+            metrics.forEach(metric => {
+                if (metric.textContent.includes('%')) {
+                    const currentValue = parseFloat(metric.textContent);
+                    const variation = (Math.random() - 0.5) * 2; // ±1% variation
+                    const newValue = Math.max(0, Math.min(100, currentValue + variation));
+                    metric.textContent = newValue.toFixed(1) + '%';
+                }
+            });
+        }
+        
+        // Update data every 30 seconds
+        setInterval(simulateRealTimeData, 30000);
+        
+        // Export functionality (placeholder)
+        function exportData(format) {
+            console.log(`Exporting data in ${format} format`);
+            // In a real application, you would generate and download a file (CSV, PDF, etc.)
+            showNotification(`Data export initiated for ${format} format.`, 'info');
+        }
+        
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                background: ${type === 'success' ? '#2ecc71' : type === 'warning' ? '#f39c12' : type === 'error' ? '#e74c3c' : '#3498db'};
+                color: white;
+                border-radius: 5px;
+                z-index: 1000;
+                animation: slideIn 0.3s ease forwards; /* Use forwards to keep final state */
+                opacity: 0; /* Start hidden for animation */
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Trigger animation
+            setTimeout(() => {
+                notification.style.opacity = 1;
+                notification.style.transform = 'translateX(0)';
+            }, 10); // Small delay to ensure CSS transition applies
+
+            setTimeout(() => {
+                notification.style.opacity = 0;
+                notification.style.transform = 'translateX(100%)';
+                notification.addEventListener('transitionend', () => notification.remove());
+            }, 3000);
+        }
+        
+        // Add CSS animation for notifications
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            
+            .notification {
+                transition: all 0.3s ease-out;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Performance monitoring (example)
+        function checkPerformanceAlerts() {
+            const performanceThresholds = {
+                'samriddhi': 75,
+                'kawach': 80,
+                'mrc': 70
+            };
+            
+            // Simulate performance checks
+            Object.entries(performanceThresholds).forEach(([program, threshold]) => {
+                const currentPerformance = Math.random() * 100; // Simulate dynamic performance
+                if (currentPerformance < threshold) {
+                    showNotification(`${program.toUpperCase()} performance below threshold: ${currentPerformance.toFixed(1)}%`, 'warning');
+                } else if (currentPerformance > 95) {
+                    showNotification(`${program.toUpperCase()} performance is excellent: ${currentPerformance.toFixed(1)}%`, 'success');
+                }
+            });
+        }
+
+        // Run performance checks periodically
+        setInterval(checkPerformanceAlerts, 60000); // Every 1 minute
+        
+    </script>
+</body>
+</html>

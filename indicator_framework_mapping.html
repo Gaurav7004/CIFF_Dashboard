@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Indicator Framework Mapping</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .framework-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .framework-stage {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            min-height: 600px;
+            transition: transform 0.3s ease;
+        }
+        
+        .framework-stage:hover {
+            transform: translateY(-5px);
+        }
+        
+        .input-stage { border-top: 5px solid #3498db; }
+        .output-stage { border-top: 5px solid #2ecc71; }
+        .outcome-stage { border-top: 5px solid #f39c12; }
+        .impact-stage { border-top: 5px solid #e74c3c; }
+        
+        .stage-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .stage-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .input-stage .stage-title { color: #3498db; }
+        .output-stage .stage-title { color: #2ecc71; }
+        .outcome-stage .stage-title { color: #f39c12; }
+        .impact-stage .stage-title { color: #e74c3c; }
+        
+        .stage-description {
+            font-size: 0.9rem;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .indicator-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .indicator-item {
+            background: #f8f9fa;
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            border-left: 3px solid;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .indicator-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .input-stage .indicator-item { border-left-color: #3498db; }
+        .output-stage .indicator-item { border-left-color: #2ecc71; }
+        .outcome-stage .indicator-item { border-left-color: #f39c12; }
+        .impact-stage .indicator-item { border-left-color: #e74c3c; }
+        
+        .indicator-type {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .kpi { background: #e8f5e8; color: #2d5a2d; }
+        .interim { background: #fff3cd; color: #856404; }
+        .activity { background: #f8d7da; color: #721c24; }
+        
+        .program-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        
+        .samriddhi { background: #d4edda; color: #155724; }
+        .kawach { background: #fff3cd; color: #856404; }
+        .mrc { background: #e2e3f1; color: #383d41; }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255,255,255,0.9);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .flow-arrows {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .arrow {
+            font-size: 2rem;
+            color: white;
+            margin: 0 10px;
+        }
+        
+        .search-filter {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .search-input {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            width: 300px;
+            max-width: 100%;
+        }
+        
+        @media (max-width: 1200px) {
+            .framework-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .framework-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Complete Indicator Framework Mapping</h1>
+            <p>Input → Output → Outcome → Impact Classification of All 60+ Indicators</p>
+        </div>
+        
+        <div class="summary-stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalIndicators">62</div>
+                <div class="stat-label">Total Indicators</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="inputCount">8</div>
+                <div class="stat-label">Input Indicators</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="outputCount">25</div>
+                <div class="stat-label">Output Indicators</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="outcomeCount">18</div>
+                <div class="stat-label">Outcome Indicators</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="impactCount">11</div>
+                <div class="stat-label">Impact Indicators</div>
+            </div>
+        </div>
+        
+        <div class="search-filter">
+            <input type="text" class="search-input" placeholder="Search indicators..." id="searchInput">
+        </div>
+        
+        <div class="flow-arrows">
+            <span>INPUTS</span>
+            <span class="arrow">→</span>
+            <span>OUTPUTS</span>
+            <span class="arrow">→</span>
+            <span>OUTCOMES</span>
+            <span class="arrow">→</span>
+            <span>IMPACT</span>
+        </div>
+        
+        <div class="framework-container">
+            <!-- INPUT STAGE -->
+            <div class="framework-stage input-stage">
+                <div class="stage-header">
+                    <div class="stage-title">INPUTS</div>
+                    <div class="stage-description">Resources, funding, infrastructure, capacity building</div>
+                </div>
+                <ul class="indicator-list">
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag samriddhi">SAMRIDDHI</span>
+                        <br>Availability of increased Govt. scholarship for girls ($m)
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>TA to state govt - Funds unlocked from government for strengthening systems
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>Number of community volunteers trained
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>Build awareness and capacity of community-based groups (SMCs, SHGs)
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>Number of state with which MRC has formal technical assistance partnership
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>Number ofstate governments investing in last-mile delivery systems for migrants
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type interim">INTERIM</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>OCAT/ McKinsey Organizational Health tool assessment results
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type interim">INTERIM</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>Number of CBO partners receiving OD support from MRC
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- OUTPUT STAGE -->
+            <div class="framework-stage output-stage">
+                <div class="stage-header">
+                    <div class="stage-title">OUTPUTS</div>
+                    <div class="stage-description">Direct products, services delivered, systems established</div>
+                </div>
+                <ul class="indicator-list">
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag samriddhi">SAMRIDDHI</span>
+                        <br>Number of additional girls with a scholarship
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag samriddhi">SAMRIDDHI</span>
+                        <br>Additional number of girls enrolled/transitioned to grades 9-12
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag samriddhi">SAMRIDDHI</span>
+                        <br>Percentage of eligible girls getting scholarships in intervention districts
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type activity">ACTIVITY</span>
+                        <span class="program-tag samriddhi">SAMRIDDHI</span>
+                        <br>Govt. orders with/from the 4 states
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>Number of cases reported to child protection bodies - Child labor
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>Number of cases reported to child protection bodies - Child trafficking
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>Number of cases reported by child protection bodies - Child Marriage
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>Number of GPs/ULBs that organise pledging events for child protection
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>% of GPs and ULBs with Child Welfare and Protection Committees - Operational
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>% of blocks with child welfare protection committee - Operational
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>% of districts with child protection committees - Operational
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>No of Model DCPUs set up with focus on prevention strategies
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>Number of states with notified convergent plans
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>Number of workers rescued from forced labour
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>Number of companies paying at least one social security benefit
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>Number of investors promoting social security benefits with investees
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>% of districts operated by CBOs
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type interim">INTERIM</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>Number of household registered on the platform (cumulative)
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type interim">INTERIM</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>Number of calls fielded on the helpline
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type interim">INTERIM</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>Number of workers for whom forced labour cases registered
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type interim">INTERIM</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>Number of workers for whom non-payment of wages cases registered
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type interim">INTERIM</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>Number of companies partnering with MRC for social security
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type interim">INTERIM</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>Number of pilots implemented to test pay-for models
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type interim">INTERIM</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>Number of states adopting mechanisms to improve registrations
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- OUTCOME STAGE -->
+            <div class="framework-stage outcome-stage">
+                <div class="stage-header">
+                    <div class="stage-title">OUTCOMES</div>
+                    <div class="stage-description">Behavioral changes, improved access, reduced vulnerability</div>
+                </div>
+                <ul class="indicator-list">
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag samriddhi">SAMRIDDHI</span>
+                        <br>Reduction in girl dropout rate in 4 states (state level)
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag samriddhi">SAMRIDDHI</span>
+                        <br>Reduction in girl dropout rate in 4 states (district level)
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag samriddhi">SAMRIDDHI</span>
+                        <br>Increased pass rate of girls in secondary grades
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag samriddhi">SAMRIDDHI</span>
+                        <br>% Increase in knowledge/awareness of girls & community on scholarships
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>% Increase in action taken by child protection bodies to prevent child labour
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>% Increase in action taken by child protection bodies to prevent child trafficking
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>% Increase in action taken by child protection bodies to prevent Child Marriage
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>Number of reported cases where action is taken - Child trafficking
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>Number of cases of child marriages prevented due to action taken
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>Number and % of out of school children (6 to < 14 yrs.) enrolled in formal education
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>Number and % of out of school children (14 to <18 yrs.) enrolled into formal education or skilling
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>% of GPs and ULBs with CWPCs - Functional
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>% of reported cases of Child marriage on which CMPO takes action
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>Average Number of benefits households are accessing
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>Number of workers who successfully received lost wages
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>% of BOCW Cess funds utilised in 4 priority states
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>% of migrants accessing food rations at destinations
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type interim">INTERIM</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>Avg time spent in accessing benefits (TBC)
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- IMPACT STAGE -->
+            <div class="framework-stage impact-stage">
+                <div class="stage-header">
+                    <div class="stage-title">IMPACT</div>
+                    <div class="stage-description">Long-term societal change, violence reduction, wellbeing</div>
+                </div>
+                <ul class="indicator-list">
+                    <li class="indicator-item">
+                        <span class="indicator-type activity">ACTIVITY</span>
+                        <span class="program-tag samriddhi">SAMRIDDHI</span>
+                        <br>Cost per girl reduces to $2 in the last year of intervention
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type activity">ACTIVITY</span>
+                        <span class="program-tag samriddhi">SAMRIDDHI</span>
+                        <br>Central government agrees to inflation-adjusted annual indexing of scholarships
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>Building children's capacity through collectivization - issues brought forward by collectives
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>Building children's capacity through collectivization - issues brought forward by children
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>Number of children connected to national/state specific schemes
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>Number of eligible individuals/HHs having access to social protection schemes
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag kawach">KAWACH</span>
+                        <br>No of districts with costed action plan for prevention and response to CM
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>% Migrant household facing shocks that report lower adverse coping mechanisms
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>Cumulative unique households receiving benefits facilitated by MRC
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>$ value of government benefits facilitated
+                    </li>
+                    <li class="indicator-item">
+                        <span class="indicator-type kpi">KPI</span>
+                        <span class="program-tag mrc">MRC</span>
+                        <br>Number of workers receiving at least one govt social security benefit
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const indicators = document.querySelectorAll('.indicator-item');
+            
+            indicators.forEach(indicator => {
+                const text = indicator.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    indicator.style.display = 'block';
+                } else {
+                    indicator.style.display = 'none';
+                }
+            });
+            
+            // Update counts
+            updateCounts();
+        });
+        
+        function updateCounts() {
+            const stages = ['input', 'output', 'outcome', 'impact'];
+            
+            stages.forEach(stage => {
+                const stageElement = document.querySelector(`.${stage}-stage`);
+                const visibleIndicators = stageElement.querySelectorAll('.indicator-item[style="display: block"], .indicator-item:not([style*="display: none"])');
+                const countElement = document.getElementById(`${stage}Count`);
+                if (countElement) {
+                    countElement.textContent = visibleIndicators.length;
+                }
+            });
+            
+            // Update total
+            const totalVisible = document.querySelectorAll('.indicator-item[style="display: block"], .indicator-item:not([style*="display: none"])').length;
+            document.getElementById('totalIndicators').textContent = totalVisible;
+        }
+        
+        // Initialize counts
+        updateCounts();
+        
+        // Add click functionality to indicators
+        document.querySelectorAll('.indicator-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // Toggle selection
+                this.style.backgroundColor = this.style.backgroundColor === 'rgb(233, 236, 239)' ? '#f8f9fa' : '#e9ecef';
+            });
+        });
+    </script>
+</body>
+</html>
